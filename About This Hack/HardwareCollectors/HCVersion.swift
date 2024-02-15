@@ -1,10 +1,3 @@
-//
-//  HCVersion.swift
-//  About This Hack
-//
-//  Created by Felix on 15.07.23.
-//
-
 import Foundation
 
 class HCVersion {
@@ -14,30 +7,30 @@ class HCVersion {
     static var OSname: String = ""
     static var OSBuildNum: String = "19G101"
     static var osPrefix: String = "macOS"
-    
     static var dataHasBeenSet: Bool = false
-    
     
     static func getVersion() {
         if (dataHasBeenSet) {return}
+        osPrefix = "macOS"
         OSnum = getOSnum()
+        OSBuildNum = getOSbuild()
         print(OSnum)
         setOSvers(osNumber: OSnum)
         OSname = macOSversToString()
-        osPrefix = getOSPrefix()
-        OSBuildNum = getOSBuildNum()
-        
+        print("OS Build Number: \(OSBuildNum)")
         dataHasBeenSet = true
     }
-    
-    
 
     static func getOSnum() -> String {
-        
-        let osVersion = run("sw_vers -productVersion")
-        
+        let osVersion = run("sw_vers -productVersion | tr -d '\n'")
         return osVersion
     }
+  
+    static func getOSbuild() -> String {
+        let osSHA = " (" + run("sw_vers -buildVersion | tr -d '\n'") + ") "
+        return osSHA
+    }
+    
     static func setOSvers(osNumber: String) {
         switch osNumber.prefix(2) {
             case "14": OSvers = macOSvers.SONOMA
@@ -45,26 +38,20 @@ class HCVersion {
             case "12": OSvers = macOSvers.MONTEREY
             case "11": OSvers = macOSvers.BIG_SUR
             case "10":
-                if osNumber.contains("16") { OSvers = macOSvers.BIG_SUR }
-                else if osNumber.contains("15") { OSvers = macOSvers.CATALINA }
-                else if osNumber.contains("14") { OSvers = macOSvers.MOJAVE }
-                else if osNumber.contains("13") { OSvers = macOSvers.HIGH_SIERRA }
-                else if osNumber.contains("12") { OSvers = macOSvers.SIERRA }
-                else if osNumber.contains("11") { OSvers = macOSvers.EL_CAPITAN }
-                else if osNumber.contains("10") { OSvers = macOSvers.YOSEMITE }
-                else if osNumber.contains("9") { OSvers = macOSvers.MAVERICKS }
-                else { OSvers = macOSvers.macOS }
+                switch osNumber.prefix(5) {
+                    case "10.16": OSvers = macOSvers.BIG_SUR
+                    case "10.15": OSvers = macOSvers.CATALINA
+                    case "10.14": OSvers = macOSvers.MOJAVE
+                    case "10.13": OSvers = macOSvers.HIGH_SIERRA
+                    case "10.12": OSvers = macOSvers.SIERRA
+                    default: OSvers = macOSvers.macOS
+                }
             default: OSvers = macOSvers.macOS
         }
     }
 
-
-
     static func macOSversToString() -> String {
         switch OSvers {
-        case .MAVERICKS: return "Mavericks"
-        case .YOSEMITE: return "Yosemite"
-        case .EL_CAPITAN: return "El Capitan"
         case .SIERRA: return "Sierra"
         case .HIGH_SIERRA: return "High Sierra"
         case .MOJAVE: return "Mojave"
@@ -77,25 +64,44 @@ class HCVersion {
         }
     }
 
+// ToolTip osVersiontoolTip
+    static func getOSBuildInfo() -> String {
+        var osKernelInfo: String   = ""
+        var osSipInfo: String     = ""
+        var oclppatchInfo: String = ""
+        
+        osKernelInfo = run ("grep \"Kernel Version: \" " + initGlobVar.syssoftdataFilePath + " | awk -F': ' '{print $2}'")
+        osSipInfo   = run ("grep \"System Integrity Protection: \" " + initGlobVar.syssoftdataFilePath + "| awk -F': ' '{print \"SIP: \"$2\" \"}' | tr -d '\n'")
+//         osSipInfo   = "SIP: Enable" // test code
+        if osSipInfo.contains("Disabled") {
+            let sipValue = run ("ioreg -fiw0 -p IODeviceTree -rn options | grep \"csr-active-config\" | awk '{print \"(0x\"substr($3,4,2) substr($3,2,2) substr($3,6,4)\")\"}' | tr -d '\n'")
+            if sipValue.length == 12 && !sipValue.contains("(0x\">\"g)") { osSipInfo += "\(sipValue)\n" } else { osSipInfo += "\n"}
+        } else { osSipInfo += " (0x00000000)\n" }
+        
+        if initGlobVar.defaultfileManager.fileExists(atPath: initGlobVar.oclpXmlFilePath) {
+            oclppatchInfo = run("grep -A1 \"<key>OpenCore Legacy Patcher</key>\" " + initGlobVar.oclpXmlFilePath + " | tail -1 | sed -e 's?.*<string>?OCLP ?' -e 's?<\\/string>??' | tr -d '\n'")
+            let oclpCommit = run("grep -A1 \"<key>Commit URL</key>\" " + initGlobVar.oclpXmlFilePath + " | tail -1 | sed -e 's?.*<string>??' -e 's?<\\/string>??' | awk -F'/' '{print \"(\" substr($NF,1,7) \")\"}' | tr -d '\n'")
+            let oclpDateTime = run("grep -A1 \"<key>Time Patched</key>\" " + initGlobVar.oclpXmlFilePath + " | tail -1 | sed -e 's?.*<string>?(?' -e 's?@ ? ?' -e 's?<\\/string>?)?'")
 
-    static func getOSBuildNum() -> String {
-        return "(" + run("sw_vers -buildVersion") + ")"
-    }
-    
-    static func getOSPrefix() -> String{
-        switch OSvers {
-        case .MAVERICKS,.YOSEMITE,.EL_CAPITAN:
-            return "OS X"
-        case .SIERRA,.HIGH_SIERRA,.MOJAVE,.CATALINA,.BIG_SUR,.MONTEREY,.VENTURA,.SONOMA,.macOS:
-            return "macOS"
+            if oclpCommit != "" { oclppatchInfo += " \(oclpCommit)" }
+            if oclpDateTime != "" { oclppatchInfo += " \(oclpDateTime)" }
+
         }
+
+        if osSipInfo != "" {
+            osKernelInfo += "\(osSipInfo)"
+        }
+
+        if oclppatchInfo != "" {
+            osKernelInfo += "\(oclppatchInfo)"
+        }
+        
+        print("OS Build Info: \(osKernelInfo)")
+        return osKernelInfo
     }
 }
 
 enum macOSvers {
-    case MAVERICKS
-    case YOSEMITE
-    case EL_CAPITAN
     case SIERRA
     case HIGH_SIERRA
     case MOJAVE

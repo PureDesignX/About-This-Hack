@@ -31,31 +31,6 @@ class ViewController: NSViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        _ = run("mkdir ~/.ath")
-        print("Directory created...")
-        func createFileIfNeeded(atPath path: String, withCommand command: String) {
-            let fileManager = FileManager.default
-
-            if !fileManager.fileExists(atPath: path) {
-                _ = run(command)
-            }
-        }
-
-        // Example usage
-        let homeDirectory = NSHomeDirectory()
-        let hwFilePath = homeDirectory + "/.ath/hw.txt"
-        let sysmemFilePath = homeDirectory + "/.ath/sysmem.txt"
-        let sysvolnameFilePath = homeDirectory + "/.ath/sysvolname.txt"
-        let scrFilePath = homeDirectory + "/.ath/scr.txt"
-        let scrXmlFilePath = homeDirectory + "/.ath/scrXml.txt"
-
-        createFileIfNeeded(atPath: hwFilePath, withCommand: "system_profiler SPHardwareDataType > \"\(hwFilePath)\"")
-        createFileIfNeeded(atPath: sysmemFilePath, withCommand: "system_profiler SPMemoryDataType > \"\(sysmemFilePath)\"")
-        createFileIfNeeded(atPath: sysvolnameFilePath, withCommand: "diskutil info / > \"\(sysvolnameFilePath)\"")
-        createFileIfNeeded(atPath: scrFilePath, withCommand: "system_profiler SPDisplaysDataType > \"\(scrFilePath)\"")
-        createFileIfNeeded(atPath: scrXmlFilePath, withCommand: "system_profiler SPDisplaysDataType -xml > \"\(scrXmlFilePath)\"")
-        print("Files created...")
         
         // Call Functions to init Overview
         HCVersion.getVersion()
@@ -64,9 +39,18 @@ class ViewController: NSViewController {
         _ = HCRAM.getRam()
         _ = HCStartupDisk.getStartupDisk()
         _ = HCDisplay.getDisp()
+        _ = HCGPU.getGPU()
         
+        var sleepValue:Double = 0
+        switch HCVersion.OSname {
+        case "Big Sur"     : sleepValue = 0.5
+        case "Catalina"    : sleepValue = 0.5
+        case "Mojave"      : sleepValue = 0.5
+        case "High Sierra" : sleepValue = 0.5
+        default            : sleepValue = 0
+        }
+        if sleepValue > 0  { Thread.sleep(forTimeInterval: sleepValue) }
     }
-    
 
     override var representedObject: Any? {
         didSet {
@@ -76,14 +60,14 @@ class ViewController: NSViewController {
     override func viewDidAppear() {
         super.viewDidAppear()
         self.view.window?.styleMask.remove(NSWindow.StyleMask.resizable)
-        
-        // Call Start Function
+
         self.start()
+        setToolTips()
     }
-    
-    
     func start() {
-        print("Initializing...")
+        print("Initializing Main View...")
+        
+        if (!HardwareCollector.dataHasBeenSet) {HardwareCollector.getAllData()
         
         switch HCVersion.OSvers {
         case .SONOMA:
@@ -110,15 +94,6 @@ class ViewController: NSViewController {
         case .SIERRA:
             picture.image = NSImage(named: "Sierra")
             break
-        case .EL_CAPITAN:
-            picture.image = NSImage(named: "El Capitan")
-            break
-        case .YOSEMITE:
-            picture.image = NSImage(named: "Yosemite")
-            break
-        case .MAVERICKS:
-            picture.image = NSImage(named: "Mavericks")
-            break
         case .macOS:
             picture.image = NSImage(named: "Unknown")
             break
@@ -128,7 +103,7 @@ class ViewController: NSViewController {
         osVersion.stringValue = HCVersion.OSname
 
         // macOS Version ID
-        systemVersion.stringValue = HCVersion.getOSnum() + HCVersion.OSBuildNum
+        systemVersion.stringValue = HCVersion.getOSnum() + HCVersion.getOSbuild()
 
         // Mac Model
         macModel.stringValue = HCMacModel.macName + " - " + HCMacModel.getModelIdentifier()
@@ -156,10 +131,8 @@ class ViewController: NSViewController {
 
         // Make Serial Number Toggle Transparent
         serialToggle.isTransparent = true
-
-        // Add credit text
     }
-
+}
     
     func updateView() {
         picture.needsDisplay = true
@@ -173,6 +146,21 @@ class ViewController: NSViewController {
         startupDisk.needsDisplay = true
         serialNumber.needsDisplay = true
         blVersion.needsDisplay = true
+    }
+    
+    func setToolTips() {
+        osVersion.toolTip     = osVersiontoolTip
+        systemVersion.toolTip = systemVersiontoolTip
+        macModel.toolTip      = macModeltoolTip
+        cpu.toolTip           = cputoolTip
+        ram.toolTip           = ramtoolTip
+        startupDisk.toolTip   = startupDisktoolTip
+        display.toolTip       = displaytoolTip
+        graphics.toolTip      = graphicstoolTip
+        serialToggle.toolTip  = serialToggletoolTip
+        blVersion.toolTip     = blVersiontoolTip
+        btSysInfo.toolTip     = btSysInfotoolTip
+        btSoftUpd.toolTip     = btSoftUpdtoolTip
     }
     
     @IBAction func hideSerialNumber(_ sender: NSButton) {
@@ -200,6 +188,12 @@ class ViewController: NSViewController {
         
     @IBAction func showSoftwareUpdate(_ sender: NSButton) {
         print("Software Update...")
-        _ = run("open /System/Library/PreferencePanes/SoftwareUpdate.prefPane")
+        let dirObject = "/System/Library/PreferencePanes/SoftwareUpdate.prefPane"
+        var dirExist : ObjCBool = false
+        if initGlobVar.defaultfileManager.fileExists(atPath: dirObject, isDirectory: &dirExist) && dirExist.boolValue {
+            _ = run("open /System/Library/PreferencePanes/SoftwareUpdate.prefPane")
+        } else {
+            _ = run("open \(initGlobVar.allAppliLocation)/\"App Store.app\"")
+        }
     }
 }

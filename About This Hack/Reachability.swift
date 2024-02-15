@@ -1,10 +1,3 @@
-//
-//  Reachability.swift
-//  About This Hack
-//
-//  Created by MDNich on 3/27/22.
-//
-
 import Foundation
 import SystemConfiguration
 
@@ -39,12 +32,8 @@ public class Reachability {
         let needsConnection = (flags.rawValue & UInt32(kSCNetworkFlagsConnectionRequired)) != 0
         let ret = (isReachable && !needsConnection)
         
-        if(ret) {
-            print("[Reachability Subsystem] Internet IS reachable!")
-        }
-        else {
-            print("[Reachability Subsystem] Internet is NOT reachable!")
-        }
+        if(ret) { print("[Reachability Subsystem] Internet IS reachable!") }
+        else { print("[Reachability Subsystem] Internet is NOT reachable!") }
         
         return ret
 

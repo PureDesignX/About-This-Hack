@@ -1,44 +1,37 @@
-//
-//  HCGPU.swift
-//  About This Hack
-//
-//  Created by Felix on 16.07.23.
-//
-
 import Foundation
 
 class HCGPU {
-    
-    
+     
     static func getGPU() -> String {
-        var graphicsTmp = run("cat ~/.ath/scr.txt | grep 'Chipset' | sed 's/.*: //'")
-        if graphicsTmp.contains("Intel") || graphicsTmp.contains("NVIDIA") {
-            graphicsTmp = graphicsTmp.replacingOccurrences(of: "Intel ", with: "")
-            graphicsTmp = graphicsTmp.replacingOccurrences(of: "NVIDIA ", with: "")
-        }
-        let graphicsRAM  = run("cat ~/.ath/scr.txt | grep VRAM | sed 's/.*: //'")
-        let graphicsArray = graphicsTmp.components(separatedBy: "\n").filter({ $0 != ""})
-        print(graphicsArray)
-        print(graphicsArray.count)
-        let vramArray = graphicsRAM.components(separatedBy: "\n")
-        var gpuInfoFormatted = ""
-        if graphicsArray.count == 1 {
-            gpuInfoFormatted = "\(graphicsArray[0]) \(vramArray[0])"
-        } else {
-            for index in 0..<graphicsArray.count {
-                gpuInfoFormatted += "\(graphicsArray[index]) \(vramArray[index])"
-                if index <= graphicsArray.count - 2 {
-                    gpuInfoFormatted += " + "
+        var gpuInfoFormatted: String = ""
+        var gpuArray:[String] = []
+        var chipFound:Bool = false
+        var vramFound:Bool = false
+        var metaFound:Bool = false
+        
+        gpuArray = run("egrep \"Chipset|VRAM|Metal\" " + initGlobVar.scrFilePath + " | grep -A2 \"Chipset\" | sed 's/^. *//'").components(separatedBy: "\n")
+        if gpuArray != [""] {
+            for gpuIndex in 0..<gpuArray.count {
+                if gpuArray[gpuIndex].contains("Chipset") && !chipFound {
+                    gpuInfoFormatted = String(gpuArray[gpuIndex].split(separator: ":")[1].replacingOccurrences(of: "Intel ", with: "").replacingOccurrences(of: "NVIDIA ", with: "").trimmingCharacters(in: .whitespacesAndNewlines))
+                    chipFound = true
+                }
+                if gpuArray[gpuIndex].contains("VRAM") && !vramFound {
+                    gpuInfoFormatted += " " + String(gpuArray[gpuIndex].split(separator: ":")[1].trimmingCharacters(in: .whitespacesAndNewlines))
+                    vramFound = true
+                }
+                if gpuArray[gpuIndex].contains("Metal") && !metaFound {
+                    gpuInfoFormatted += " (Metal " + String(gpuArray[gpuIndex].split(separator: ":")[1]).replacingOccurrences(of: "Metal", with: "").trimmingCharacters(in: .whitespacesAndNewlines) + ")"
+                    metaFound = true
                 }
             }
         }
-
-//        while x < min(vramArray.count, graphicsArray.count) {
-//            gpuInfoFormatted.append("\(graphicsArray[x]) \(vramArray[x])\n")
-//            x += 1
-//        }
-        return gpuInfoFormatted
+        print("\(gpuInfoFormatted)")
+        return "\(gpuInfoFormatted)"
     }
     
-    
+    static func getGPUInfo() -> String {
+        return "Graphics\n" + run("egrep -v \"Graphics/Displays:|^      Displays:|^        [A-Za-z0-9]|^          [A-Za-z0-9]\" \(initGlobVar.scrFilePath)")
+    }
+
 }
