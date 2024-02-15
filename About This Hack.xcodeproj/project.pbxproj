@@ -68,6 +68,7 @@
 		DC6870572A6473E400CAD908 /* HCSerialNumber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HCSerialNumber.swift; sourceTree = "<group>"; };
 		DC6870592A6473F000CAD908 /* HCBootloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HCBootloader.swift; sourceTree = "<group>"; };
 		DC68705B2A6474B600CAD908 /* HCDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HCDisplay.swift; sourceTree = "<group>"; };
+		F06E1C862B7E669A0059D47E /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = "zh-Hans"; path = "zh-Hans.lproj/Main.storyboard"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -194,6 +195,7 @@
 				en,
 				Base,
 				fr,
+				"zh-Hans",
 			);
 			mainGroup = 115D920526D6F65500F5DF35;
 			packageReferences = (
@@ -260,6 +262,7 @@
 			children = (
 				D91B9F7429B27FA800AB58B7 /* en */,
 				965FD7C32AF3947B007E88BC /* fr */,
+				F06E1C862B7E669A0059D47E /* zh-Hans */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -397,11 +400,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "About This Hack/About_This_Hack.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1400;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = T474C55Q79;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "About This Hack/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "About This Hack";
@@ -414,7 +418,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.netlify.0xCUBE.About-This-Hack";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -430,11 +434,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = "About This Hack/About_This_Hack.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1400;
 				DEAD_CODE_STRIPPING = YES;
-				DEVELOPMENT_TEAM = T474C55Q79;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				INFOPLIST_FILE = "About This Hack/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "About This Hack";
@@ -447,7 +452,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/swift",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "app.netlify.0xCUBE.About-This-Hack";
 				PRODUCT_NAME = "$(TARGET_NAME)";
